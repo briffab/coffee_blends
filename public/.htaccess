@@ -1,1 +1,22 @@
 Options -Indexes
+
+# On hosts where config.php has to live directly in this webroot (the "flat"
+# layout — see includes/bootstrap.php), it still must never be servable over
+# HTTP. Same for any stray backup/dump file that ends up in here by accident.
+<FilesMatch "^config\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "\.(sql|md|bak|old)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>

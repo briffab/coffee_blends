@@ -1,14 +1,14 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 require_login();
 
 $currentUser = current_user($pdo);
 $blends = get_blends_for_user($pdo, current_user_id());
 
 $pageTitle = 'Your blends';
-require __DIR__ . '/../src/views/header.php';
+require __DIR__ . '/includes/views/header.php';
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1 class="h3 mb-0">Your blends</h1>
@@ -47,4 +47,4 @@ require __DIR__ . '/../src/views/header.php';
     </table>
   </div>
 <?php endif; ?>
-<?php require __DIR__ . '/../src/views/footer.php'; ?>
+<?php require __DIR__ . '/includes/views/footer.php'; ?>

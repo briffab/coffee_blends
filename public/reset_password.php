@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 
 $token = (string) ($_GET['token'] ?? $_POST['token'] ?? '');
 $user = $token !== '' ? find_user_by_reset_token($pdo, $token) : null;
@@ -9,7 +9,7 @@ $error = null;
 
 if (!$user) {
     $pageTitle = 'Reset password';
-    require __DIR__ . '/../src/views/header.php';
+    require __DIR__ . '/includes/views/header.php';
     ?>
     <div class="row justify-content-center">
       <div class="col-md-5">
@@ -17,7 +17,7 @@ if (!$user) {
       </div>
     </div>
     <?php
-    require __DIR__ . '/../src/views/footer.php';
+    require __DIR__ . '/includes/views/footer.php';
     exit;
 }
 
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Reset password';
-require __DIR__ . '/../src/views/header.php';
+require __DIR__ . '/includes/views/header.php';
 ?>
 <div class="row justify-content-center">
   <div class="col-md-5">
@@ -59,4 +59,4 @@ require __DIR__ . '/../src/views/header.php';
     </form>
   </div>
 </div>
-<?php require __DIR__ . '/../src/views/footer.php'; ?>
+<?php require __DIR__ . '/includes/views/footer.php'; ?>

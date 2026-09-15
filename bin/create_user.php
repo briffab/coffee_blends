@@ -6,7 +6,7 @@ declare(strict_types=1);
 // app has no public self-registration page.
 // Usage: php bin/create_user.php "Full Name" "email@example.com" "password"
 
-require __DIR__ . '/../src/db.php';
+require __DIR__ . '/../public/includes/db.php';
 
 $config = require __DIR__ . '/../config/config.php';
 

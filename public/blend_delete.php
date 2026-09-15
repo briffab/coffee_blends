@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

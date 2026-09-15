@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 require_login();
 
 $currentUser = current_user($pdo);
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Edit blend';
-require __DIR__ . '/../src/views/header.php';
+require __DIR__ . '/includes/views/header.php';
 ?>
 <h1 class="h3 mb-4">Edit blend</h1>
 
@@ -63,7 +63,7 @@ require __DIR__ . '/../src/views/header.php';
   <h2 class="h5 mt-4">Beans</h2>
   <div id="bean-rows">
     <?php foreach ($beans as $i => $bean): ?>
-      <?php $index = $i; require __DIR__ . '/../src/views/bean_row_fields.php'; ?>
+      <?php $index = $i; require __DIR__ . '/includes/views/bean_row_fields.php'; ?>
     <?php endforeach; ?>
   </div>
   <button type="button" class="btn btn-outline-primary mb-4" id="add-bean">+ Add another bean</button>
@@ -83,7 +83,7 @@ require __DIR__ . '/../src/views/header.php';
 </form>
 
 <template id="bean-template">
-  <?php $index = '__INDEX__'; $bean = []; require __DIR__ . '/../src/views/bean_row_fields.php'; ?>
+  <?php $index = '__INDEX__'; $bean = []; require __DIR__ . '/includes/views/bean_row_fields.php'; ?>
 </template>
 
 <div class="mt-5 pt-4 border-top">
@@ -95,4 +95,4 @@ require __DIR__ . '/../src/views/header.php';
 </div>
 
 <script src="assets/js/blend-form.js"></script>
-<?php require __DIR__ . '/../src/views/footer.php'; ?>
+<?php require __DIR__ . '/includes/views/footer.php'; ?>

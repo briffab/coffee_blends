@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 require_login();
 
 $currentUser = current_user($pdo);
@@ -18,7 +18,7 @@ function fmt_value($value, string $suffix = ''): string
 }
 
 $pageTitle = $blend['name'];
-require __DIR__ . '/../src/views/header.php';
+require __DIR__ . '/includes/views/header.php';
 ?>
 <div class="d-flex justify-content-between align-items-start mb-3">
   <div>
@@ -70,4 +70,4 @@ require __DIR__ . '/../src/views/header.php';
 
 <a href="home.php" class="btn btn-link ps-0">&larr; Back to all blends</a>
 
-<?php require __DIR__ . '/../src/views/footer.php'; ?>
+<?php require __DIR__ . '/includes/views/footer.php'; ?>

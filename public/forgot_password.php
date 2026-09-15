@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/includes/bootstrap.php';
 
 $sent = false;
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Forgot password';
-require __DIR__ . '/../src/views/header.php';
+require __DIR__ . '/includes/views/header.php';
 ?>
 <div class="row justify-content-center">
   <div class="col-md-5">
@@ -41,4 +41,4 @@ require __DIR__ . '/../src/views/header.php';
     <p class="mt-3"><a href="login.php">Back to log in</a></p>
   </div>
 </div>
-<?php require __DIR__ . '/../src/views/footer.php'; ?>
+<?php require __DIR__ . '/includes/views/footer.php'; ?>

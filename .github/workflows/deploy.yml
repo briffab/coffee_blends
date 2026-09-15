@@ -1,0 +1,38 @@
+name: Deploy to coffee.thebriffas.co.uk
+
+# Manual only — pushes to main do NOT go live automatically. Go to this repo's
+# "Actions" tab on GitHub, pick "Deploy to coffee.thebriffas.co.uk", click
+# "Run workflow". See README.md's "Deploying to thebriffas.co.uk" section for
+# the one-time server + secrets setup this needs.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Upload over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Same host as the other thebriffas.co.uk sites — plain FTP.
+          # Use a dedicated FTP account for this, separate from the other
+          # sites', scoped to wherever this subdomain's document root is.
+          protocol: ftp
+          # This host's subdomain tool only accepts a single folder directly
+          # inside public_html (no nested custom path), so config.php can't
+          # live outside the document root the way it does locally — only
+          # public/'s *contents* get deployed, straight to the FTP account's
+          # root. config.php is created directly on the server (it's
+          # gitignored, never in this upload) and protected by public/
+          # .htaccess — see public/includes/bootstrap.php for the two
+          # layouts it accepts.
+          local-dir: public/
+          server-dir: /
+          exclude: |
+            config.php
