@@ -36,7 +36,7 @@ require __DIR__ . '/../src/views/header.php';
         <?php foreach ($blends as $blend): ?>
           <tr>
             <td><a href="blend_view.php?id=<?= (int) $blend['id'] ?>"><?= htmlspecialchars($blend['name']) ?></a></td>
-            <td><?= htmlspecialchars($blend['roast_date']) ?></td>
+            <td><?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></td>
             <td><?= (int) $blend['bean_count'] ?></td>
             <td class="text-end">
               <a class="btn btn-sm btn-outline-secondary" href="blend_edit.php?id=<?= (int) $blend['id'] ?>">Edit</a>

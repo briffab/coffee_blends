@@ -23,7 +23,7 @@ require __DIR__ . '/../src/views/header.php';
 <div class="d-flex justify-content-between align-items-start mb-3">
   <div>
     <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
-    <p class="text-muted mb-0">Roasted <?= htmlspecialchars($blend['roast_date']) ?></p>
+    <p class="text-muted mb-0">Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></p>
   </div>
   <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-outline-secondary">Edit</a>
 </div>

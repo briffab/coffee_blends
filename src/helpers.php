@@ -21,3 +21,16 @@ function numeric_or_null($value): ?float
     $value = trim((string) $value);
     return $value === '' ? null : (is_numeric($value) ? (float) $value : null);
 }
+
+/**
+ * Formats a Y-m-d date (as stored in the database and used by the
+ * HTML date input) as dd-mm-yyyy for display.
+ */
+function format_date_for_display(?string $isoDate): string
+{
+    if ($isoDate === null || $isoDate === '') {
+        return '';
+    }
+    $date = DateTime::createFromFormat('Y-m-d', $isoDate);
+    return $date ? $date->format('d-m-Y') : $isoDate;
+}
