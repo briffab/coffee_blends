@@ -19,6 +19,7 @@ just upload the files.
   ambient temperature, sky conditions (sunny/partial/cloudy), and roast
   level (light/medium/dark/very dark/oily/burnt)
 - Everyone signed in can see every family member's blends (with who added each one); only the person who added a blend, or an admin, can edit it, delete it or change its image
+- Anyone signed in can add their own **tasting notes** (espresso and/or milky) to any blend; they show under the blend with the person's name. You can edit or delete your own notes; admins can delete anyone's
 - Family accounts: an admin adds, edits, resets passwords for and deletes
   users from the **Users** page; everyone can change their own name and
   password from the link with their name at the top right
@@ -171,6 +172,21 @@ image** on its page. Unchosen candidates are deleted.
   `sql/migrations/001_add_blend_image.sql` (phpMyAdmin → SQL tab on the live
   database; locally via `mysql`). Fresh installs from `sql/schema.sql` already
   include the column.
+
+## Tasting notes
+
+A blend's own espresso/milky notes belong to the person who added it (and are
+edited with the rest of the blend). Everyone else — and the owner too — adds
+their own notes in the **Add your own tasting notes** box at the bottom of the
+blend page. Each note is saved separately with the author's name and date, so
+people never overwrite one another, and adding notes changes nothing else
+about the blend. Authors can edit or delete their own notes; admins can delete
+any (but not rewrite someone else's words). Deleting a blend or a user deletes
+their notes with it.
+
+- **Existing databases need a one-off migration** — run
+  `sql/migrations/003_add_tasting_notes.sql` (creates the `tasting_notes`
+  table). **Run it before deploying this version**: the blend page reads it.
 
 ## Users and admins
 

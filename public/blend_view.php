@@ -18,6 +18,8 @@ function fmt_value($value, string $suffix = ''): string
 }
 
 $canManage = can_manage_blend($blend, $currentUser);
+$tastingNotes = get_tasting_notes($pdo, $blendId);
+$ownerName = display_name(['name' => $blend['owner_name'], 'email' => $blend['owner_email']]);
 
 $pageTitle = $blend['name'];
 require __DIR__ . '/includes/views/header.php';
@@ -75,14 +77,85 @@ require __DIR__ . '/includes/views/header.php';
   </table>
 </div>
 
+<h2 class="h5" id="notes">Tasting notes</h2>
+<p class="text-muted small mb-2">From <?= htmlspecialchars($ownerName) ?>, who added this blend:</p>
 <div class="row">
   <div class="col-md-6 mb-3">
-    <h2 class="h5">Espresso notes</h2>
+    <h3 class="h6">Espresso</h3>
     <p class="bg-white p-3 rounded border"><?= $blend['espresso_notes'] !== null && $blend['espresso_notes'] !== '' ? nl2br(htmlspecialchars($blend['espresso_notes'])) : '<span class="text-muted">No notes yet.</span>' ?></p>
   </div>
   <div class="col-md-6 mb-3">
-    <h2 class="h5">Milky drink notes</h2>
+    <h3 class="h6">Milky drinks</h3>
     <p class="bg-white p-3 rounded border"><?= $blend['milky_notes'] !== null && $blend['milky_notes'] !== '' ? nl2br(htmlspecialchars($blend['milky_notes'])) : '<span class="text-muted">No notes yet.</span>' ?></p>
+  </div>
+</div>
+
+<?php foreach ($tastingNotes as $note): ?>
+  <?php
+    $isAuthor = (int) $note['user_id'] === (int) $currentUser['id'];
+    $authorName = display_name(['name' => $note['author_name'], 'email' => $note['author_email']]);
+  ?>
+  <div class="bg-white p-3 rounded border mb-3">
+    <div class="d-flex justify-content-between">
+      <strong><?= htmlspecialchars($authorName) ?><?= $isAuthor ? ' <span class="badge bg-light text-dark border">You</span>' : '' ?></strong>
+      <span class="text-muted small"><?= htmlspecialchars(format_date_for_display(substr((string) $note['created_at'], 0, 10))) ?></span>
+    </div>
+    <div class="row mt-2">
+      <?php if ($note['espresso_notes'] !== null): ?>
+        <div class="col-md-6"><div class="small text-muted">Espresso</div><?= nl2br(htmlspecialchars($note['espresso_notes'])) ?></div>
+      <?php endif; ?>
+      <?php if ($note['milky_notes'] !== null): ?>
+        <div class="col-md-6"><div class="small text-muted">Milky drinks</div><?= nl2br(htmlspecialchars($note['milky_notes'])) ?></div>
+      <?php endif; ?>
+    </div>
+    <?php if ($isAuthor || (int) $currentUser['is_admin'] === 1): ?>
+      <div class="d-flex gap-3 align-items-start mt-3">
+        <?php if ($isAuthor): ?>
+          <details class="flex-grow-1">
+            <summary class="small text-primary" style="cursor: pointer;">Edit</summary>
+            <form method="post" action="tasting_notes.php" class="mt-2">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="update">
+              <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">
+              <div class="row g-2">
+                <div class="col-md-6"><label class="form-label small">Espresso</label><textarea class="form-control" name="espresso_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"><?= htmlspecialchars((string) $note['espresso_notes']) ?></textarea></div>
+                <div class="col-md-6"><label class="form-label small">Milky drinks</label><textarea class="form-control" name="milky_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"><?= htmlspecialchars((string) $note['milky_notes']) ?></textarea></div>
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary mt-2">Save</button>
+            </form>
+          </details>
+        <?php endif; ?>
+        <form method="post" action="tasting_notes.php" onsubmit="return confirm('Delete this tasting note?');" class="ms-auto">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">
+          <button type="submit" class="btn btn-link btn-sm text-danger p-0">Delete</button>
+        </form>
+      </div>
+    <?php endif; ?>
+  </div>
+<?php endforeach; ?>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h3 class="h6">Add your own tasting notes</h3>
+    <p class="text-muted small">Tried this blend? Add what you thought — it shows up here with your name and doesn't change anything else.</p>
+    <form method="post" action="tasting_notes.php">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="add">
+      <input type="hidden" name="blend_id" value="<?= $blendId ?>">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="espresso_notes">Espresso</label>
+          <textarea class="form-control" id="espresso_notes" name="espresso_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"></textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="milky_notes">Milky drinks</label>
+          <textarea class="form-control" id="milky_notes" name="milky_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">Add my tasting notes</button>
+    </form>
   </div>
 </div>
 
