@@ -6,10 +6,14 @@ require_login();
 
 $currentUser = current_user($pdo);
 $blendId = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
-$existing = get_blend($pdo, $blendId, current_user_id());
+$existing = get_blend($pdo, $blendId);
 if (!$existing) {
     http_response_code(404);
     exit('Blend not found.');
+}
+if (!can_manage_blend($existing, $currentUser)) {
+    http_response_code(403);
+    exit('Only the person who added this blend, or an admin, can edit it.');
 }
 
 $errors = [];
@@ -29,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $beans = $parsed['beans'] ?: [[]];
 
     if (empty($errors)) {
-        save_blend($pdo, current_user_id(), $blend, $parsed['beans'], $blendId);
+        save_blend($pdo, (int) $existing['user_id'], $blend, $parsed['beans'], $blendId);
         if (!empty($_POST['regenerate_image']) && image_generation_enabled($config)) {
             header('Location: blend_images.php?id=' . $blendId);
         } else {

@@ -18,7 +18,7 @@ just upload the files.
   weight, roast temperature, roast time, roaster temperature at start,
   ambient temperature, sky conditions (sunny/partial/cloudy), and roast
   level (light/medium/dark/very dark/oily/burnt)
-- Each user only sees their own blends
+- Everyone signed in can see every family member's blends (with who added each one); only the person who added a blend, or an admin, can edit it, delete it or change its image
 - Family accounts: an admin adds, edits, resets passwords for and deletes
   users from the **Users** page; everyone can change their own name and
   password from the link with their name at the top right
@@ -188,8 +188,10 @@ image** on its page. Unchosen candidates are deleted.
   `no-reply@thebriffas.co.uk`) — the example's `example.com` address won't
   deliver reliably. If sending fails you're told, and the account is still
   created. The homepage link comes from `app.home_url`.
-- Members only ever see their own blends — admins can't browse other
-  people's blends either, only manage the accounts.
+- Everyone can see everyone's blends. Only the person who added a blend, or
+  an admin, can edit or delete it or change its image (so the OpenAI credit
+  isn't spent by someone else). The blends list has an **Everyone's / Mine**
+  switch.
 - Safeguards: there is always at least one admin, you can't delete your own
   account, and email addresses are unique.
 - **Existing databases need a one-off migration** — run

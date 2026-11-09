@@ -6,7 +6,7 @@ require_login();
 
 $currentUser = current_user($pdo);
 $blendId = (int) ($_GET['id'] ?? 0);
-$blend = get_blend($pdo, $blendId, current_user_id());
+$blend = get_blend($pdo, $blendId);
 if (!$blend) {
     http_response_code(404);
     exit('Blend not found.');
@@ -16,6 +16,8 @@ function fmt_value($value, string $suffix = ''): string
 {
     return $value === null || $value === '' ? '—' : htmlspecialchars((string) $value) . $suffix;
 }
+
+$canManage = can_manage_blend($blend, $currentUser);
 
 $pageTitle = $blend['name'];
 require __DIR__ . '/includes/views/header.php';
@@ -27,15 +29,20 @@ require __DIR__ . '/includes/views/header.php';
     <?php endif; ?>
     <div>
       <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
-      <p class="text-muted mb-2">Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></p>
-      <?php if (image_generation_enabled($config)): ?>
+      <p class="text-muted mb-2">
+        Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?>
+        &middot; added by <?= htmlspecialchars(display_name(['name' => $blend['owner_name'], 'email' => $blend['owner_email']])) ?>
+      </p>
+      <?php if ($canManage && image_generation_enabled($config)): ?>
         <a href="blend_images.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-primary">
           <?= !empty($blend['image_path']) ? 'Change image' : 'Create an image' ?>
         </a>
       <?php endif; ?>
     </div>
   </div>
-  <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-outline-secondary">Edit</a>
+  <?php if ($canManage): ?>
+    <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-outline-secondary">Edit</a>
+  <?php endif; ?>
 </div>
 
 <?php if (!empty($_GET['created'])): ?><div class="alert alert-success">Blend saved.</div><?php endif; ?>

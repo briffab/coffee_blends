@@ -68,7 +68,7 @@ require __DIR__ . '/includes/views/header.php';
 </div>
 
 <h2 class="h5">Add a family member</h2>
-<p class="text-muted">They sign in with their email and the password you set here, and only ever see their own blends.</p>
+<p class="text-muted">They sign in with their email and the password you set here. They can see everyone's blends, but only edit their own.</p>
 
 <?php if ($errors): ?>
   <div class="alert alert-danger">

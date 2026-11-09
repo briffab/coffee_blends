@@ -6,10 +6,14 @@ require_login();
 
 $currentUser = current_user($pdo);
 $blendId = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
-$blend = get_blend($pdo, $blendId, current_user_id());
+$blend = get_blend($pdo, $blendId);
 if (!$blend) {
     http_response_code(404);
     exit('Blend not found.');
+}
+if (!can_manage_blend($blend, $currentUser)) {
+    http_response_code(403);
+    exit('Only the person who added this blend, or an admin, can change its image.');
 }
 if (!image_generation_enabled($config)) {
     header('Location: blend_view.php?id=' . $blendId);
@@ -37,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'choose') {
-        if (choose_image_candidate($pdo, $blendId, current_user_id(), (int) ($_POST['choice'] ?? 0))) {
+        if (choose_image_candidate($pdo, $blendId, (int) $blend['user_id'], (int) ($_POST['choice'] ?? 0))) {
             header('Location: blend_view.php?id=' . $blendId . '&image=1');
             exit;
         }

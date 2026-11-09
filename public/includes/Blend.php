@@ -5,24 +5,32 @@ declare(strict_types=1);
 const ROAST_LEVELS = ['light', 'medium', 'dark', 'very_dark', 'oily', 'burnt'];
 const CLOUD_CONDITIONS = ['sunny', 'partial', 'cloudy'];
 
-function get_blends_for_user(PDO $pdo, int $userId): array
+/** Every blend in the family (newest first), or only one person's when $onlyUserId is given. */
+function get_blends(PDO $pdo, ?int $onlyUserId = null): array
 {
     $stmt = $pdo->prepare(
-        'SELECT b.*, COUNT(bb.id) AS bean_count
+        'SELECT b.*, u.name AS owner_name, u.email AS owner_email, COUNT(bb.id) AS bean_count
          FROM blends b
+         JOIN users u ON u.id = b.user_id
          LEFT JOIN blend_beans bb ON bb.blend_id = b.id
-         WHERE b.user_id = ?
-         GROUP BY b.id
+         WHERE (? IS NULL OR b.user_id = ?)
+         GROUP BY b.id, u.id
          ORDER BY b.roast_date DESC, b.id DESC'
     );
-    $stmt->execute([$userId]);
+    $stmt->execute([$onlyUserId, $onlyUserId]);
     return $stmt->fetchAll();
 }
 
-function get_blend(PDO $pdo, int $blendId, int $userId): ?array
+/** Any blend by id — all blends are visible to every signed-in family member. */
+function get_blend(PDO $pdo, int $blendId): ?array
 {
-    $stmt = $pdo->prepare('SELECT * FROM blends WHERE id = ? AND user_id = ?');
-    $stmt->execute([$blendId, $userId]);
+    $stmt = $pdo->prepare(
+        'SELECT b.*, u.name AS owner_name, u.email AS owner_email
+         FROM blends b
+         JOIN users u ON u.id = b.user_id
+         WHERE b.id = ?'
+    );
+    $stmt->execute([$blendId]);
     $blend = $stmt->fetch();
     if (!$blend) {
         return null;
@@ -100,6 +108,13 @@ function save_blend(PDO $pdo, int $userId, array $blendData, array $beans, ?int 
         $pdo->rollBack();
         throw $e;
     }
+}
+
+/** Only the person who added a blend, or an admin, may change or delete it. */
+function can_manage_blend(array $blend, ?array $user): bool
+{
+    return $user !== null
+        && ((int) $blend['user_id'] === (int) $user['id'] || (int) $user['is_admin'] === 1);
 }
 
 function delete_blend(PDO $pdo, int $blendId, int $userId): void
