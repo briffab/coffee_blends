@@ -80,6 +80,34 @@ function http_get_bytes(string $url): string
     return $body;
 }
 
+/** @return array{0:int,1:?string,2:string} HTTP status, response body (null if unreachable), curl error */
+function request_image_generation(array $cfg, string $model, string $prompt): array
+{
+    $ch = curl_init($cfg['endpoint'] ?? 'https://api.openai.com/v1/images/generations');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 220,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $cfg['api_key'],
+        ],
+        CURLOPT_POSTFIELDS => json_encode([
+            'model' => $model,
+            'prompt' => $prompt,
+            'n' => BLEND_IMAGE_CANDIDATES,
+            'size' => $cfg['size'] ?? '1024x1024',
+            'quality' => $cfg['quality'] ?? 'low',
+        ]),
+    ]);
+    $body = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    return [$status, is_string($body) ? $body : null, $curlError];
+}
+
 /**
  * Asks the image API for BLEND_IMAGE_CANDIDATES variations of the blend name
  * and saves them as cand_1..N. Replaces any existing candidates.
@@ -98,35 +126,32 @@ function generate_image_candidates(array $config, int $blendId, string $blendNam
     $cfg = $config['images'];
     @set_time_limit(240);
 
-    $ch = curl_init($cfg['endpoint'] ?? 'https://api.openai.com/v1/images/generations');
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 220,
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $cfg['api_key'],
-        ],
-        CURLOPT_POSTFIELDS => json_encode([
-            'model' => $cfg['model'] ?? 'gpt-image-1',
-            'prompt' => build_image_prompt($blendName),
-            'n' => BLEND_IMAGE_CANDIDATES,
-            'size' => $cfg['size'] ?? '1024x1024',
-            'quality' => $cfg['quality'] ?? 'low',
-        ]),
-    ]);
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
-
-    if (!is_string($body)) {
-        throw new RuntimeException('Could not reach the image service: ' . $curlError);
+    // `model` may be one ID or a list tried in order: image model names get
+    // retired/renamed, so fall through to the next only when the API says that
+    // model doesn't exist (or this key can't use it).
+    $models = (array) ($cfg['model'] ?? ['gpt-image-2.5-flare', 'gpt-image-2']);
+    $data = null;
+    $lastError = 'No image model configured.';
+    foreach ($models as $model) {
+        [$status, $body, $curlError] = request_image_generation($cfg, (string) $model, build_image_prompt($blendName));
+        if ($body === null) {
+            throw new RuntimeException('Could not reach the image service: ' . $curlError);
+        }
+        $decoded = json_decode($body, true);
+        if ($status === 200 && isset($decoded['data']) && is_array($decoded['data'])) {
+            $data = $decoded;
+            break;
+        }
+        $detail = is_array($decoded) ? (string) ($decoded['error']['message'] ?? '') : '';
+        $lastError = 'The image service returned an error (HTTP ' . $status . ')' . ($detail !== '' ? ': ' . $detail : '.');
+        $modelUnavailable = in_array($status, [400, 403, 404], true)
+            && preg_match('/model.*(does not exist|not found|not available|access|deprecated|retired)|(does not exist|not found|no access).*model/i', $detail) === 1;
+        if (!$modelUnavailable) {
+            break;
+        }
     }
-    $data = json_decode($body, true);
-    if ($status !== 200 || !isset($data['data']) || !is_array($data['data'])) {
-        $detail = is_array($data) ? (string) ($data['error']['message'] ?? '') : '';
-        throw new RuntimeException('The image service returned an error (HTTP ' . $status . ')' . ($detail !== '' ? ': ' . $detail : '.'));
+    if ($data === null) {
+        throw new RuntimeException($lastError);
     }
 
     $dir = blend_image_dir($blendId);

@@ -145,6 +145,11 @@ image** on its page. Unchosen candidates are deleted.
   the feature is off — blends save exactly as before. **The key lives only in
   `config.php`** (gitignored); never commit it or put it in a GitHub secret
   for this.
+- `model` in the `images` block can be one ID or a list tried in order (image
+  model names get retired and renamed — `gpt-image-1` stopped working in late
+  2026). If you see "The model '…' does not exist", set it to a current model
+  from OpenAI's image-generation docs, or delete the `model` line to use the
+  app's defaults.
 - Each generation makes five images in one API call, billed to your OpenAI
   account (the default `quality` is `low`, the cheapest; raise it for nicer
   pictures at higher cost). A generation takes anywhere from a few seconds to

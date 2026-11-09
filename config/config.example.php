@@ -26,7 +26,10 @@ return [
     // Needs an OpenAI API key (platform.openai.com) — keep it ONLY in this file.
     'images' => [
         'api_key' => '',
-        'model' => 'gpt-image-1',
+        // One model ID, or a list tried in order (OpenAI retires/renames image
+        // models; the next is tried only if one "does not exist" for your key).
+        // Delete this line to use the app's built-in defaults.
+        'model' => ['gpt-image-2.5-flare', 'gpt-image-2'],
         'size' => '1024x1024',
         'quality' => 'low',
         'endpoint' => 'https://api.openai.com/v1/images/generations',
