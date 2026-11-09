@@ -48,3 +48,16 @@ function take_flashes(): array
     unset($_SESSION['flash']);
     return $flashes;
 }
+
+/** A user's name for greetings; falls back to the start of their email if the name is blank. */
+function display_name(array $user): string
+{
+    $name = trim((string) ($user['name'] ?? ''));
+    if ($name !== '') {
+        return $name;
+    }
+    $email = (string) ($user['email'] ?? '');
+    $local = strstr($email, '@', true);
+
+    return $local !== false && $local !== '' ? $local : 'there';
+}

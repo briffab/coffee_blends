@@ -20,7 +20,7 @@ $currentUser = $currentUser ?? (isset($pdo) && current_user_id() ? current_user(
         <?php if ((int) $currentUser['is_admin'] === 1): ?>
           <a class="text-light text-decoration-none" href="admin_users.php">Users</a>
         <?php endif; ?>
-        <a class="text-light text-decoration-none" href="account.php">Hi, <?= htmlspecialchars($currentUser['name']) ?></a>
+        <a class="text-light text-decoration-none" href="account.php">Hi, <?= htmlspecialchars(display_name($currentUser)) ?></a>
         <a class="btn btn-outline-light btn-sm" href="logout.php">Log out</a>
       </div>
     <?php endif; ?>

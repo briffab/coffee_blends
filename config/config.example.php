@@ -16,8 +16,12 @@ return [
         // Set explicitly if auto-detection doesn't work behind your proxy/load balancer.
         'base_url' => '',
         'session_name' => 'coffee_blends_session',
+        // Linked from the welcome email sent to new family members.
+        'home_url' => 'https://thebriffas.co.uk',
     ],
     'mail' => [
+        // Use an address on your own domain (e.g. no-reply@thebriffas.co.uk) —
+        // most hosts only deliver mail() reliably when it's "from" your domain.
         'from_email' => 'no-reply@example.com',
         'from_name' => 'Coffee Blends',
     ],

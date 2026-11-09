@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'is_admin' => !empty($_POST['is_admin']),
     ];
     $password = (string) ($_POST['password'] ?? '');
+    $sendEmail = !empty($_POST['send_email']);
 
     $errors = validate_user_details($pdo, $form['name'], $form['email']);
     $passwordError = validate_new_password($password);
@@ -24,7 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         create_user($pdo, $form['name'], $form['email'], $password, $form['is_admin']);
-        flash('success', 'Account created for ' . $form['name'] . '. Give them their email address and the password you set — they can change it from the account link at the top right.');
+        if (!$sendEmail) {
+            flash('success', 'Account created for ' . $form['name'] . '. Give them their email address and the password you set — they can change it from the account link at the top right.');
+        } elseif (send_welcome_email($config, ['name' => $form['name'], 'email' => $form['email']], $password, $currentUser)) {
+            flash('success', 'Account created for ' . $form['name'] . ' and their login details were emailed to ' . $form['email'] . '. (If it does not turn up, check their spam folder.)');
+        } else {
+            flash('warning', 'Account created for ' . $form['name'] . ', but the email could not be sent. Please give them their email address and the password you set yourself.');
+        }
         header('Location: admin_users.php');
         exit;
     }
@@ -46,7 +53,7 @@ require __DIR__ . '/includes/views/header.php';
       <?php foreach ($users as $user): ?>
         <tr>
           <td>
-            <?= htmlspecialchars($user['name']) ?>
+            <?= htmlspecialchars(display_name($user)) ?>
             <?php if ((int) $user['id'] === (int) $currentUser['id']): ?><span class="badge bg-light text-dark border ms-1">You</span><?php endif; ?>
           </td>
           <td><?= htmlspecialchars($user['email']) ?></td>
@@ -91,6 +98,15 @@ require __DIR__ . '/includes/views/header.php';
     <div class="form-check mt-3">
       <input class="form-check-input" type="checkbox" name="is_admin" value="1" id="is_admin" <?= $form['is_admin'] ? 'checked' : '' ?>>
       <label class="form-check-label" for="is_admin">Make them an admin</label>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="send_email" value="1" id="send_email" checked>
+      <label class="form-check-label" for="send_email">
+        Email them their login details
+        <span class="text-muted">(their email address, this password in plain text, and links to the app and The Briffas)</span>
+      </label>
     </div>
   </div>
   <div class="col-12">

@@ -178,8 +178,16 @@ image** on its page. Unchosen candidates are deleted.
   navigation: add a family member (name, email, starting password — there's
   a Generate button), edit their name/email, make them an admin, set a new
   password for them, or delete the account (which also deletes their blends
-  and images). Give new people their email and starting password yourself;
-  they can change the password under **Hi, <name>** at the top right.
+  and images). By default the new person is **emailed their login details**
+  (website link, email/username, the first-time password in plain text, and a
+  link to The Briffas homepage); untick the box to hand the details over
+  yourself instead. They can change the password under **Hi, <name>** at the
+  top right.
+- Email uses PHP's `mail()`, like the password-reset email. Set
+  `mail.from_email` in `config.php` to an address on your own domain (e.g.
+  `no-reply@thebriffas.co.uk`) — the example's `example.com` address won't
+  deliver reliably. If sending fails you're told, and the account is still
+  created. The homepage link comes from `app.home_url`.
 - Members only ever see their own blends — admins can't browse other
   people's blends either, only manage the accounts.
 - Safeguards: there is always at least one admin, you can't delete your own
