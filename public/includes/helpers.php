@@ -61,3 +61,15 @@ function display_name(array $user): string
 
     return $local !== false && $local !== '' ? $local : 'there';
 }
+
+/**
+ * Adds a "?v=<file modified time>" to a public asset path so browsers (phones
+ * especially) fetch the new file after a deploy instead of reusing a stale
+ * cached copy.
+ */
+function asset_url(string $relativePath): string
+{
+    $file = dirname(__DIR__) . '/' . $relativePath;
+
+    return $relativePath . '?v=' . (is_file($file) ? (string) filemtime($file) : '1');
+}

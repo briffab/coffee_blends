@@ -112,5 +112,5 @@ require __DIR__ . '/includes/views/header.php';
   </form>
 </div>
 
-<script src="assets/js/blend-form.js"></script>
+<script src="<?= asset_url('assets/js/blend-form.js') ?>"></script>
 <?php require __DIR__ . '/includes/views/footer.php'; ?>

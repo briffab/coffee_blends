@@ -77,5 +77,5 @@ require __DIR__ . '/includes/views/header.php';
   <?php $index = '__INDEX__'; $bean = []; require __DIR__ . '/includes/views/bean_row_fields.php'; ?>
 </template>
 
-<script src="assets/js/blend-form.js"></script>
+<script src="<?= asset_url('assets/js/blend-form.js') ?>"></script>
 <?php require __DIR__ . '/includes/views/footer.php'; ?>

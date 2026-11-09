@@ -47,7 +47,7 @@ require __DIR__ . '/includes/views/header.php';
 <div class="table-responsive mb-5">
   <table class="table align-middle bg-white">
     <thead>
-      <tr><th>Name</th><th>Email</th><th>Role</th><th>Blends</th><th>Added</th><th></th></tr>
+      <tr><th>Name</th><th class="d-none d-md-table-cell">Email</th><th>Role</th><th class="d-none d-md-table-cell">Blends</th><th class="d-none d-md-table-cell">Added</th><th></th></tr>
     </thead>
     <tbody>
       <?php foreach ($users as $user): ?>
@@ -55,11 +55,12 @@ require __DIR__ . '/includes/views/header.php';
           <td>
             <?= htmlspecialchars(display_name($user)) ?>
             <?php if ((int) $user['id'] === (int) $currentUser['id']): ?><span class="badge bg-light text-dark border ms-1">You</span><?php endif; ?>
+            <div class="small text-muted d-md-none text-break"><?= htmlspecialchars($user['email']) ?></div>
           </td>
-          <td><?= htmlspecialchars($user['email']) ?></td>
+          <td class="d-none d-md-table-cell"><?= htmlspecialchars($user['email']) ?></td>
           <td><?= (int) $user['is_admin'] === 1 ? '<span class="badge bg-dark">Admin</span>' : 'Member' ?></td>
-          <td><?= (int) $user['blend_count'] ?></td>
-          <td><?= htmlspecialchars(format_date_for_display(substr((string) $user['created_at'], 0, 10))) ?></td>
+          <td class="d-none d-md-table-cell"><?= (int) $user['blend_count'] ?></td>
+          <td class="d-none d-md-table-cell"><?= htmlspecialchars(format_date_for_display(substr((string) $user['created_at'], 0, 10))) ?></td>
           <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="admin_user_edit.php?id=<?= (int) $user['id'] ?>">Manage</a></td>
         </tr>
       <?php endforeach; ?>

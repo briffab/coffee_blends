@@ -137,6 +137,17 @@ in `public/includes/mailer.php` for a proper SMTP library (e.g. install
 PHPMailer with `composer require phpmailer/phpmailer` and send via your
 mail provider's SMTP credentials).
 
+## Phones and small screens
+
+The pages are laid out for phones: blends are a card list, a blend's beans
+show as cards, form fields pair up two to a row, and nothing scrolls
+sideways. Blend pictures are shown from a small 240px copy (made
+automatically the first time it's needed, when PHP's `gd` extension is
+available) so lists load quickly on mobile data, and tapping the picture on a
+blend's page opens it full size. The stylesheet and script URLs carry a
+version (`?v=<last-modified time>`) so phones pick up changes after a deploy
+instead of showing a stale cached copy.
+
 ## Blend images
 
 After you save a new blend, the app asks OpenAI's image API for five

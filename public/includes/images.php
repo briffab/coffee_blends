@@ -229,10 +229,52 @@ function choose_image_candidate(PDO $pdo, int $blendId, int $userId, int $choice
 
     if (is_string($old) && $old !== '' && basename($old) !== $finalName) {
         @unlink($dir . '/' . basename($old));
+        @unlink($dir . '/' . basename(blend_thumb_path($old)));
     }
     clear_image_candidates($blendId);
 
     return true;
+}
+
+function blend_thumb_path(string $imagePath): string
+{
+    return dirname($imagePath) . '/thumb_' . pathinfo($imagePath, PATHINFO_FILENAME) . '.jpg';
+}
+
+/** Writes a small square-ish JPEG copy of $source; false if GD isn't available. */
+function create_image_thumbnail(string $source, string $dest, int $size = 240): bool
+{
+    if (!function_exists('imagecreatefromstring') || !function_exists('imagejpeg')) {
+        return false;
+    }
+    $bytes = @file_get_contents($source);
+    $img = is_string($bytes) ? @imagecreatefromstring($bytes) : false;
+    if ($img === false) {
+        return false;
+    }
+    $scaled = imagescale($img, $size);
+
+    return $scaled !== false && imagejpeg($scaled, $dest, 82);
+}
+
+/**
+ * URL of a small version of a blend's image for lists and headers (a phone
+ * shouldn't download the full picture for a 64px thumbnail). Created the
+ * first time it's needed; falls back to the full image if that isn't possible.
+ */
+function blend_thumb_url(string $imagePath): string
+{
+    $thumbUrl = blend_thumb_path($imagePath);
+    $thumbFile = dirname(__DIR__) . '/' . $thumbUrl;
+    if (is_file($thumbFile)) {
+        return $thumbUrl;
+    }
+    $source = dirname(__DIR__) . '/' . $imagePath;
+    if (is_file($source) && create_image_thumbnail($source, $thumbFile)) {
+        return $thumbUrl;
+    }
+
+    return $imagePath;
 }
 
 function delete_blend_images(int $blendId): void

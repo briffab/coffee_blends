@@ -24,27 +24,29 @@ $ownerName = display_name(['name' => $blend['owner_name'], 'email' => $blend['ow
 $pageTitle = $blend['name'];
 require __DIR__ . '/includes/views/header.php';
 ?>
-<div class="d-flex justify-content-between align-items-start mb-3">
-  <div class="d-flex gap-3 align-items-start">
-    <?php if (!empty($blend['image_path'])): ?>
-      <img src="<?= htmlspecialchars($blend['image_path']) ?>" alt="" class="blend-photo rounded">
-    <?php endif; ?>
-    <div>
-      <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
-      <p class="text-muted mb-2">
-        Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?>
-        &middot; added by <?= htmlspecialchars(display_name(['name' => $blend['owner_name'], 'email' => $blend['owner_email']])) ?>
-      </p>
-      <?php if ($canManage && image_generation_enabled($config)): ?>
-        <a href="blend_images.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-primary">
-          <?= !empty($blend['image_path']) ? 'Change image' : 'Create an image' ?>
-        </a>
-      <?php endif; ?>
-    </div>
-  </div>
-  <?php if ($canManage): ?>
-    <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-outline-secondary">Edit</a>
+<div class="blend-header mb-3">
+  <?php if (!empty($blend['image_path'])): ?>
+    <a href="<?= htmlspecialchars($blend['image_path']) ?>" class="blend-photo-link" title="View full size">
+      <img src="<?= htmlspecialchars(blend_thumb_url($blend['image_path'])) ?>" alt="" width="120" height="120" decoding="async" class="blend-photo rounded">
+    </a>
   <?php endif; ?>
+  <div class="blend-header-text">
+    <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
+    <p class="text-muted mb-2">
+      Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?>
+      &middot; added by <?= htmlspecialchars($ownerName) ?>
+    </p>
+    <?php if ($canManage): ?>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
+        <?php if (image_generation_enabled($config)): ?>
+          <a href="blend_images.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-primary">
+            <?= !empty($blend['image_path']) ? 'Change image' : 'Create an image' ?>
+          </a>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+  </div>
 </div>
 
 <?php if (!empty($_GET['created'])): ?><div class="alert alert-success">Blend saved.</div><?php endif; ?>
@@ -52,7 +54,7 @@ require __DIR__ . '/includes/views/header.php';
 <?php if (!empty($_GET['image'])): ?><div class="alert alert-success">Image saved.</div><?php endif; ?>
 
 <h2 class="h5">Beans</h2>
-<div class="table-responsive mb-4">
+<div class="table-responsive mb-4 d-none d-md-block">
   <table class="table bg-white align-middle">
     <thead>
       <tr>
@@ -75,6 +77,34 @@ require __DIR__ . '/includes/views/header.php';
       <?php endforeach; ?>
     </tbody>
   </table>
+</div>
+
+<div class="d-md-none mb-4">
+  <?php foreach ($blend['beans'] as $bean): ?>
+    <?php
+      $facts = [
+          'Weight' => fmt_value($bean['weight_g'], 'g'),
+          'Roast temp' => fmt_value($bean['roast_temperature'], '°'),
+          'Roast time' => fmt_value($bean['roast_time_minutes'], ' min'),
+          'Roaster start temp' => fmt_value($bean['roaster_start_temperature'], '°'),
+          'Ambient temp' => fmt_value($bean['ambient_temperature'], '°'),
+          'Sky' => $bean['cloud_conditions'] ? ucfirst($bean['cloud_conditions']) : '—',
+      ];
+    ?>
+    <div class="bean-card">
+      <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+        <strong class="bean-card-name"><?= htmlspecialchars($bean['variety']) ?></strong>
+        <span class="badge bg-secondary flex-shrink-0"><?= ucwords(str_replace('_', ' ', $bean['roast_level'])) ?></span>
+      </div>
+      <div class="bean-facts">
+        <?php foreach ($facts as $label => $value): ?>
+          <?php if ($value !== '—'): ?>
+            <div class="bean-fact"><span><?= $label ?></span><?= $value ?></div>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endforeach; ?>
 </div>
 
 <h2 class="h5" id="notes">Tasting notes</h2>
