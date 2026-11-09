@@ -26,6 +26,7 @@ require __DIR__ . '/includes/views/header.php';
     <table class="table table-hover align-middle bg-white">
       <thead>
         <tr>
+          <th></th>
           <th>Name</th>
           <th>Roast date</th>
           <th>Beans</th>
@@ -35,6 +36,11 @@ require __DIR__ . '/includes/views/header.php';
       <tbody>
         <?php foreach ($blends as $blend): ?>
           <tr>
+            <td class="thumb-cell">
+              <?php if (!empty($blend['image_path'])): ?>
+                <img src="<?= htmlspecialchars($blend['image_path']) ?>" alt="" class="blend-thumb rounded">
+              <?php endif; ?>
+            </td>
             <td><a href="blend_view.php?id=<?= (int) $blend['id'] ?>"><?= htmlspecialchars($blend['name']) ?></a></td>
             <td><?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></td>
             <td><?= (int) $blend['bean_count'] ?></td>

@@ -132,6 +132,34 @@ in `public/includes/mailer.php` for a proper SMTP library (e.g. install
 PHPMailer with `composer require phpmailer/phpmailer` and send via your
 mail provider's SMTP credentials).
 
+## Blend images
+
+After you save a new blend, the app asks OpenAI's image API for five
+pictures based on the blend's name and shows them on a "Pick an image" page;
+the one you choose becomes the blend's image (shown on its page and as a
+thumbnail in the list). Any blend can get a new image later with **Change
+image** on its page. Unchosen candidates are deleted.
+
+- Switched on by putting an OpenAI API key in the `images` block of
+  `config.php` (see `config/config.example.php`). Leave `api_key` blank and
+  the feature is off — blends save exactly as before. **The key lives only in
+  `config.php`** (gitignored); never commit it or put it in a GitHub secret
+  for this.
+- Each generation makes five images in one API call, billed to your OpenAI
+  account (the default `quality` is `low`, the cheapest; raise it for nicer
+  pictures at higher cost). A generation takes anywhere from a few seconds to
+  about a minute, so the page shows a progress message while it waits.
+- Needs the PHP `curl` extension. If the `gd` extension is available, images
+  are resized to 800px JPEGs; otherwise the PNGs are stored as returned.
+- Images are stored in `public/uploads/blends/<blend id>/` (created
+  automatically; PHP execution is disabled there by `uploads/.htaccess`).
+  They're gitignored and excluded from the FTP deploy so a deploy never
+  deletes them. Deleting a blend deletes its images.
+- **Existing databases need a one-off migration** — run
+  `sql/migrations/001_add_blend_image.sql` (phpMyAdmin → SQL tab on the live
+  database; locally via `mysql`). Fresh installs from `sql/schema.sql` already
+  include the column.
+
 ## Deploying to thebriffas.co.uk (this install)
 
 Same cPanel host as the other thebriffas.co.uk sites (this host doesn't

@@ -21,15 +21,26 @@ $pageTitle = $blend['name'];
 require __DIR__ . '/includes/views/header.php';
 ?>
 <div class="d-flex justify-content-between align-items-start mb-3">
-  <div>
-    <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
-    <p class="text-muted mb-0">Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></p>
+  <div class="d-flex gap-3 align-items-start">
+    <?php if (!empty($blend['image_path'])): ?>
+      <img src="<?= htmlspecialchars($blend['image_path']) ?>" alt="" class="blend-photo rounded">
+    <?php endif; ?>
+    <div>
+      <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
+      <p class="text-muted mb-2">Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></p>
+      <?php if (image_generation_enabled($config)): ?>
+        <a href="blend_images.php?id=<?= (int) $blend['id'] ?><?= !empty($blend['image_path']) ? '&amp;generate=1' : '' ?>" class="btn btn-sm btn-outline-primary">
+          <?= !empty($blend['image_path']) ? 'Change image' : 'Create an image' ?>
+        </a>
+      <?php endif; ?>
+    </div>
   </div>
   <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-outline-secondary">Edit</a>
 </div>
 
 <?php if (!empty($_GET['created'])): ?><div class="alert alert-success">Blend saved.</div><?php endif; ?>
 <?php if (!empty($_GET['updated'])): ?><div class="alert alert-success">Changes saved.</div><?php endif; ?>
+<?php if (!empty($_GET['image'])): ?><div class="alert alert-success">Image saved.</div><?php endif; ?>
 
 <h2 class="h5">Beans</h2>
 <div class="table-responsive mb-4">

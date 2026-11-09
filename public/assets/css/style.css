@@ -13,3 +13,29 @@ body {
   padding: 1rem;
   margin-bottom: 1rem;
 }
+
+.blend-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+}
+
+.thumb-cell {
+  width: 64px;
+}
+
+.blend-photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.candidate {
+  border: 2px solid transparent;
+  background: #fff;
+}
+
+.candidate:hover,
+.candidate:focus-visible {
+  border-color: #0d6efd;
+}

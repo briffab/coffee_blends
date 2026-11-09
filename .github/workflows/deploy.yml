@@ -34,5 +34,8 @@ jobs:
           # layouts it accepts.
           local-dir: public/
           server-dir: /
+          # Blend images are generated on the server and never in this diff,
+          # so a deploy would delete them — excluded here as a guard.
           exclude: |
             config.php
+            **/uploads/blends/**

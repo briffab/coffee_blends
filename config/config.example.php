@@ -21,4 +21,14 @@ return [
         'from_email' => 'no-reply@example.com',
         'from_name' => 'Coffee Blends',
     ],
+    // Blend images: after saving a blend, 5 pictures are generated from its
+    // name and you pick one. Leave api_key blank to switch the feature off.
+    // Needs an OpenAI API key (platform.openai.com) — keep it ONLY in this file.
+    'images' => [
+        'api_key' => '',
+        'model' => 'gpt-image-1',
+        'size' => '1024x1024',
+        'quality' => 'low',
+        'endpoint' => 'https://api.openai.com/v1/images/generations',
+    ],
 ];

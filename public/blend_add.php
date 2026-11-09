@@ -18,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $blendId = save_blend($pdo, current_user_id(), $blend, $parsed['beans']);
-        header('Location: blend_view.php?id=' . $blendId . '&created=1');
+        header('Location: ' . (image_generation_enabled($config)
+            ? 'blend_images.php?id=' . $blendId
+            : 'blend_view.php?id=' . $blendId . '&created=1'));
         exit;
     }
 }

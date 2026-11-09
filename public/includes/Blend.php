@@ -106,6 +106,10 @@ function delete_blend(PDO $pdo, int $blendId, int $userId): void
 {
     $stmt = $pdo->prepare('DELETE FROM blends WHERE id = ? AND user_id = ?');
     $stmt->execute([$blendId, $userId]);
+
+    if ($stmt->rowCount() > 0) {
+        delete_blend_images($blendId);
+    }
 }
 
 /**
