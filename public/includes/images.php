@@ -44,6 +44,24 @@ function build_image_prompt(string $blendName): string
         . 'square composition, no text, no words, no letters, no logos.';
 }
 
+/** Cleans a user-edited prompt; falls back to the default one when empty. */
+function normalize_image_prompt(string $prompt, string $blendName): string
+{
+    $clean = trim(preg_replace('/[^\P{C}\n]/u', ' ', $prompt) ?? '');
+    $clean = mb_substr($clean, 0, 1000);
+
+    return $clean === '' ? build_image_prompt($blendName) : $clean;
+}
+
+/** The prompt last used to generate images for this blend, if any. */
+function saved_image_prompt(int $blendId): ?string
+{
+    $file = blend_image_dir($blendId) . '/prompt.txt';
+    $text = is_file($file) ? file_get_contents($file) : false;
+
+    return is_string($text) && trim($text) !== '' ? $text : null;
+}
+
 /** Saves raw image bytes next to $destBase; returns the file extension used. */
 function store_image_bytes(string $bytes, string $destBase): string
 {
@@ -109,12 +127,13 @@ function request_image_generation(array $cfg, string $model, string $prompt): ar
 }
 
 /**
- * Asks the image API for BLEND_IMAGE_CANDIDATES variations of the blend name
- * and saves them as cand_1..N. Replaces any existing candidates.
+ * Asks the image API for BLEND_IMAGE_CANDIDATES images from $prompt (default:
+ * built from the blend name) and saves them as cand_1..N, replacing any
+ * existing candidates. The prompt is remembered for the next attempt.
  *
  * @return string[] URL paths of the saved candidates
  */
-function generate_image_candidates(array $config, int $blendId, string $blendName): array
+function generate_image_candidates(array $config, int $blendId, string $blendName, ?string $prompt = null): array
 {
     if (!image_generation_enabled($config)) {
         throw new RuntimeException('Image generation is not configured.');
@@ -124,6 +143,7 @@ function generate_image_candidates(array $config, int $blendId, string $blendNam
     }
 
     $cfg = $config['images'];
+    $prompt = normalize_image_prompt($prompt ?? '', $blendName);
     @set_time_limit(240);
 
     // `model` may be one ID or a list tried in order: image model names get
@@ -133,7 +153,7 @@ function generate_image_candidates(array $config, int $blendId, string $blendNam
     $data = null;
     $lastError = 'No image model configured.';
     foreach ($models as $model) {
-        [$status, $body, $curlError] = request_image_generation($cfg, (string) $model, build_image_prompt($blendName));
+        [$status, $body, $curlError] = request_image_generation($cfg, (string) $model, $prompt);
         if ($body === null) {
             throw new RuntimeException('Could not reach the image service: ' . $curlError);
         }
@@ -159,6 +179,7 @@ function generate_image_candidates(array $config, int $blendId, string $blendNam
         throw new RuntimeException('Could not create the images folder (is public/uploads writable?).');
     }
     clear_image_candidates($blendId);
+    file_put_contents($dir . '/prompt.txt', $prompt);
 
     $saved = 0;
     foreach (array_values($data['data']) as $i => $item) {

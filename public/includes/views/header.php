@@ -16,11 +16,17 @@ $currentUser = $currentUser ?? (isset($pdo) && current_user_id() ? current_user(
   <div class="container">
     <a class="navbar-brand" href="<?= $currentUser ? 'home.php' : 'login.php' ?>">☕ Coffee Blends</a>
     <?php if ($currentUser): ?>
-      <div class="d-flex align-items-center">
-        <span class="text-light me-3">Hi, <?= htmlspecialchars($currentUser['name']) ?></span>
+      <div class="d-flex align-items-center gap-3">
+        <?php if ((int) $currentUser['is_admin'] === 1): ?>
+          <a class="text-light text-decoration-none" href="admin_users.php">Users</a>
+        <?php endif; ?>
+        <a class="text-light text-decoration-none" href="account.php">Hi, <?= htmlspecialchars($currentUser['name']) ?></a>
         <a class="btn btn-outline-light btn-sm" href="logout.php">Log out</a>
       </div>
     <?php endif; ?>
   </div>
 </nav>
 <main class="container pb-5">
+<?php foreach (take_flashes() as $flash): ?>
+  <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['message']) ?></div>
+<?php endforeach; ?>

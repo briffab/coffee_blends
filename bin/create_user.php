@@ -36,8 +36,12 @@ if ($stmt->fetch()) {
     exit(1);
 }
 
-$hash = password_hash($password, PASSWORD_DEFAULT);
-$insert = $pdo->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
-$insert->execute([$name, $email, $hash]);
+// The very first account becomes the admin; later ones are members (an admin
+// can promote them from the Users page).
+$isAdmin = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() === 0 ? 1 : 0;
 
-echo "User created with id " . $pdo->lastInsertId() . "\n";
+$hash = password_hash($password, PASSWORD_DEFAULT);
+$insert = $pdo->prepare('INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, ?)');
+$insert->execute([$name, $email, $hash, $isAdmin]);
+
+echo "User created with id " . $pdo->lastInsertId() . ($isAdmin ? " (admin)" : "") . "\n";

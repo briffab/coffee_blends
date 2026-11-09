@@ -41,5 +41,6 @@ require __DIR__ . '/mailer.php';
 require __DIR__ . '/helpers.php';
 require __DIR__ . '/Blend.php';
 require __DIR__ . '/images.php';
+require __DIR__ . '/Users.php';
 
 $pdo = db_connect($config['db']);

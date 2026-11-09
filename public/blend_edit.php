@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         save_blend($pdo, current_user_id(), $blend, $parsed['beans'], $blendId);
         if (!empty($_POST['regenerate_image']) && image_generation_enabled($config)) {
-            header('Location: blend_images.php?id=' . $blendId . '&generate=1');
+            header('Location: blend_images.php?id=' . $blendId);
         } else {
             header('Location: blend_view.php?id=' . $blendId . '&updated=1');
         }
@@ -86,8 +86,8 @@ require __DIR__ . '/includes/views/header.php';
     <div class="form-check mb-4">
       <input class="form-check-input" type="checkbox" name="regenerate_image" value="1" id="regenerate_image">
       <label class="form-check-label" for="regenerate_image">
-        Create five new images from the blend name after saving
-        <span class="text-muted">(uses your OpenAI credit<?= !empty($existing['image_path']) ? '; your current image is kept unless you pick a new one' : '' ?>)</span>
+        Choose a new image after saving
+        <span class="text-muted">(you'll review the prompt first; nothing is generated until you click Generate<?= !empty($existing['image_path']) ? ', and your current image is kept unless you pick a new one' : '' ?>)</span>
       </label>
     </div>
   <?php endif; ?>

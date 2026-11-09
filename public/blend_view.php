@@ -29,7 +29,7 @@ require __DIR__ . '/includes/views/header.php';
       <h1 class="h3 mb-1"><?= htmlspecialchars($blend['name']) ?></h1>
       <p class="text-muted mb-2">Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?></p>
       <?php if (image_generation_enabled($config)): ?>
-        <a href="blend_images.php?id=<?= (int) $blend['id'] ?><?= !empty($blend['image_path']) ? '&amp;generate=1' : '' ?>" class="btn btn-sm btn-outline-primary">
+        <a href="blend_images.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-primary">
           <?= !empty($blend['image_path']) ? 'Change image' : 'Create an image' ?>
         </a>
       <?php endif; ?>

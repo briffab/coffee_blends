@@ -34,3 +34,17 @@ function format_date_for_display(?string $isoDate): string
     $date = DateTime::createFromFormat('Y-m-d', $isoDate);
     return $date ? $date->format('d-m-Y') : $isoDate;
 }
+
+/** Queues a one-off message (type: success|danger|info) shown on the next page. */
+function flash(string $type, string $message): void
+{
+    $_SESSION['flash'][] = ['type' => $type, 'message' => $message];
+}
+
+/** @return array<int, array{type:string,message:string}> */
+function take_flashes(): array
+{
+    $flashes = $_SESSION['flash'] ?? [];
+    unset($_SESSION['flash']);
+    return $flashes;
+}

@@ -19,10 +19,14 @@ just upload the files.
   ambient temperature, sky conditions (sunny/partial/cloudy), and roast
   level (light/medium/dark/very dark/oily/burnt)
 - Each user only sees their own blends
+- Family accounts: an admin adds, edits, resets passwords for and deletes
+  users from the **Users** page; everyone can change their own name and
+  password from the link with their name at the top right
 
 There's no public self-registration page (this is meant for personal/family
-use, not an open sign-up site). Create accounts with the `bin/create_user.php`
-CLI script — see below.
+use, not an open sign-up site). The first account is created with
+`bin/create_user.php` (it becomes the admin) — after that, the admin adds
+everyone else from the **Users** page.
 
 ## Project layout
 
@@ -137,7 +141,10 @@ mail provider's SMTP credentials).
 After you save a new blend, the app asks OpenAI's image API for five
 pictures based on the blend's name and shows them on a "Pick an image" page;
 the one you choose becomes the blend's image (shown on its page and as a
-thumbnail in the list). Any blend can get a new image later with **Change
+thumbnail in the list). The page first shows the exact prompt that will be
+sent — edit it (or add a style like "Watercolour painting") before clicking
+**Generate**; nothing is sent to OpenAI until you do, and the last prompt used
+is remembered for that blend so you can tweak it and try again. Any blend can get a new image later with **Change
 image** on its page. Unchosen candidates are deleted.
 
 - Switched on by putting an OpenAI API key in the `images` block of
@@ -164,6 +171,23 @@ image** on its page. Unchosen candidates are deleted.
   `sql/migrations/001_add_blend_image.sql` (phpMyAdmin → SQL tab on the live
   database; locally via `mysql`). Fresh installs from `sql/schema.sql` already
   include the column.
+
+## Users and admins
+
+- Users have a role: **admin** or member. Admins get a **Users** link in the
+  navigation: add a family member (name, email, starting password — there's
+  a Generate button), edit their name/email, make them an admin, set a new
+  password for them, or delete the account (which also deletes their blends
+  and images). Give new people their email and starting password yourself;
+  they can change the password under **Hi, <name>** at the top right.
+- Members only ever see their own blends — admins can't browse other
+  people's blends either, only manage the accounts.
+- Safeguards: there is always at least one admin, you can't delete your own
+  account, and email addresses are unique.
+- **Existing databases need a one-off migration** — run
+  `sql/migrations/002_add_user_admin.sql` (adds `users.is_admin` and makes
+  the earliest account the first admin). **Run it before deploying this
+  version**: the new code reads that column.
 
 ## Deploying to thebriffas.co.uk (this install)
 
@@ -232,8 +256,8 @@ php -r "echo password_hash('a-strong-password', PASSWORD_DEFAULT), \"\n\";"
 Then in phpMyAdmin's **SQL** tab, against the same database:
 
 ```sql
-INSERT INTO users (name, email, password_hash)
-VALUES ('Your Name', 'you@example.com', 'paste-the-hash-here');
+INSERT INTO users (name, email, password_hash, is_admin)
+VALUES ('Your Name', 'you@example.com', 'paste-the-hash-here', 1);
 ```
 
 (If your host has enabled *Remote MySQL* access for your database and
