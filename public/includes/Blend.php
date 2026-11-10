@@ -218,3 +218,75 @@ function parse_blend_submission(array $post): array
         'beans' => $beans,
     ];
 }
+
+/** Ways the blends list can be ordered: key => label shown in the Sort by menu. */
+const BLEND_SORTS = [
+    'date_desc' => 'Roast date (newest first)',
+    'date_asc' => 'Roast date (oldest first)',
+    'rating_desc' => 'Highest rated',
+    'rating_asc' => 'Lowest rated',
+    'name_asc' => 'Name (A to Z)',
+    'name_desc' => 'Name (Z to A)',
+    'added_desc' => 'Recently added',
+];
+
+const DEFAULT_BLEND_SORT = 'date_desc';
+
+function normalize_blend_sort(?string $sort): string
+{
+    return $sort !== null && isset(BLEND_SORTS[$sort]) ? $sort : DEFAULT_BLEND_SORT;
+}
+
+/**
+ * Orders a blends list. Blends nobody has scored always sink to the bottom of
+ * the two rating sorts; ties fall back to newest roast date, then newest id,
+ * so the order is stable.
+ *
+ * @param array<int, array{average: float, count: int}> $ratings from get_blend_ratings()
+ */
+function sort_blends(array $blends, array $ratings, string $sort): array
+{
+    $byNewest = static fn (array $a, array $b): int
+        => [$b['roast_date'], (int) $b['id']] <=> [$a['roast_date'], (int) $a['id']];
+
+    usort($blends, static function (array $a, array $b) use ($ratings, $sort, $byNewest): int {
+        $primary = 0;
+        switch ($sort) {
+            case 'date_desc':
+                return $byNewest($a, $b);
+            case 'date_asc':
+                $primary = strcmp($a['roast_date'], $b['roast_date']);
+                break;
+            case 'name_asc':
+            case 'name_desc':
+                $primary = strcmp(mb_strtolower($a['name']), mb_strtolower($b['name']));
+                if ($sort === 'name_desc') {
+                    $primary = -$primary;
+                }
+                break;
+            case 'added_desc':
+                $primary = strcmp((string) $b['created_at'], (string) $a['created_at']);
+                break;
+            case 'rating_desc':
+            case 'rating_asc':
+                $ra = $ratings[(int) $a['id']] ?? null;
+                $rb = $ratings[(int) $b['id']] ?? null;
+                if ($ra === null || $rb === null) {
+                    $primary = $ra === null ? ($rb === null ? 0 : 1) : -1;
+                } else {
+                    $primary = $ra['average'] <=> $rb['average'];
+                    if ($sort === 'rating_desc') {
+                        $primary = -$primary;
+                    }
+                    if ($primary === 0) {
+                        $primary = $rb['count'] <=> $ra['count'];
+                    }
+                }
+                break;
+        }
+
+        return $primary !== 0 ? $primary : $byNewest($a, $b);
+    });
+
+    return $blends;
+}

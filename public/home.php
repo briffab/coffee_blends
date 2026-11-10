@@ -9,6 +9,24 @@ $onlyMine = !empty($_GET['mine']);
 $blends = get_blends($pdo, $onlyMine ? (int) $currentUser['id'] : null);
 $ratings = get_blend_ratings($pdo);
 
+// The chosen sort comes from the menu (?sort=) and is remembered in a cookie
+// so the list stays the way you left it next time.
+$sort = normalize_blend_sort($_GET['sort'] ?? ($_COOKIE['blend_sort'] ?? null));
+if (isset($_GET['sort'], BLEND_SORTS[$_GET['sort']]) && ($_COOKIE['blend_sort'] ?? null) !== $sort) {
+    setcookie('blend_sort', $sort, [
+        'expires' => time() + 365 * 24 * 3600,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+$blends = sort_blends($blends, $ratings, $sort);
+
+$listUrl = static fn (bool $mine): string => 'home.php' . (
+    ($query = http_build_query(array_filter(['mine' => $mine ? 1 : null, 'sort' => $sort !== DEFAULT_BLEND_SORT ? $sort : null]))) !== '' ? '?' . $query : ''
+);
+
 $pageTitle = $onlyMine ? 'My blends' : 'Family blends';
 require __DIR__ . '/includes/views/header.php';
 ?>
@@ -17,10 +35,22 @@ require __DIR__ . '/includes/views/header.php';
   <a href="blend_add.php" class="btn btn-primary">+ Add blend</a>
 </div>
 
-<ul class="nav nav-pills mb-3">
-  <li class="nav-item"><a class="nav-link <?= $onlyMine ? '' : 'active' ?>" href="home.php">Everyone's</a></li>
-  <li class="nav-item"><a class="nav-link <?= $onlyMine ? 'active' : '' ?>" href="home.php?mine=1">Mine</a></li>
-</ul>
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <ul class="nav nav-pills">
+    <li class="nav-item"><a class="nav-link <?= $onlyMine ? '' : 'active' ?>" href="<?= htmlspecialchars($listUrl(false)) ?>">Everyone's</a></li>
+    <li class="nav-item"><a class="nav-link <?= $onlyMine ? 'active' : '' ?>" href="<?= htmlspecialchars($listUrl(true)) ?>">Mine</a></li>
+  </ul>
+  <form method="get" action="home.php" class="blend-sort d-flex align-items-center gap-2">
+    <?php if ($onlyMine): ?><input type="hidden" name="mine" value="1"><?php endif; ?>
+    <label for="sort" class="small text-muted mb-0">Sort by</label>
+    <select id="sort" name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+      <?php foreach (BLEND_SORTS as $key => $label): ?>
+        <option value="<?= $key ?>" <?= $key === $sort ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
+      <?php endforeach; ?>
+    </select>
+    <noscript><button type="submit" class="btn btn-sm btn-outline-secondary">Go</button></noscript>
+  </form>
+</div>
 
 <?php if (!empty($_GET['deleted'])): ?>
   <div class="alert alert-success">Blend deleted.</div>

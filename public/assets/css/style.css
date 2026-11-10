@@ -40,6 +40,11 @@ img {
 }
 
 /* ---------- blends list ---------- */
+.blend-sort .form-select {
+  width: auto;
+  max-width: 100%;
+}
+
 .blend-item {
   display: flex;
   align-items: center;

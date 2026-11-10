@@ -12,7 +12,7 @@ just upload the files.
 
 - Login with email + password (`password_hash`/`password_verify`)
 - "Forgot password" flow: emails a time-limited reset link
-- Home page lists all your blends, with an "Add blend" button
+- Home page lists the family's blends with an "Add blend" button, an Everyone's/Mine switch, and a **Sort by** menu (roast date newest/oldest, highest/lowest rated, name A–Z/Z–A, recently added). Blends nobody has scored always sort to the bottom of the rating sorts, and your last choice is remembered in a cookie
 - A blend has a name, roast date, an optional short **description** (the thinking behind the blend), and espresso/milky tasting notes
 - Each blend can have any number of bean varieties, each with:
   weight, roast temperature, roast time, roaster temperature at start,
