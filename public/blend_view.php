@@ -19,6 +19,7 @@ function fmt_value($value, string $suffix = ''): string
 
 $canManage = can_manage_blend($blend, $currentUser);
 $tastingNotes = get_tasting_notes($pdo, $blendId);
+$rating = get_blend_ratings($pdo, $blendId)[$blendId] ?? null;
 $ownerName = display_name(['name' => $blend['owner_name'], 'email' => $blend['owner_email']]);
 
 $pageTitle = $blend['name'];
@@ -36,6 +37,12 @@ require __DIR__ . '/includes/views/header.php';
       Roasted <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?>
       &middot; added by <?= htmlspecialchars($ownerName) ?>
     </p>
+    <?php if ($rating !== null): ?>
+      <p class="mb-2" title="Average of everyone's scores (each person counts once)">
+        <span class="score-star">&#9733;</span> <strong><?= format_score($rating['average']) ?></strong><span class="text-muted">/<?= MAX_SCORE ?></span>
+        <span class="text-muted small">&middot; <?= $rating['count'] ?> <?= $rating['count'] === 1 ? 'score' : 'scores' ?></span>
+      </p>
+    <?php endif; ?>
     <?php if ($canManage): ?>
       <div class="d-flex flex-wrap gap-2">
         <a href="blend_edit.php?id=<?= (int) $blend['id'] ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
@@ -48,6 +55,10 @@ require __DIR__ . '/includes/views/header.php';
     <?php endif; ?>
   </div>
 </div>
+
+<?php if (!empty($blend['description'])): ?>
+  <p class="blend-description"><?= nl2br(htmlspecialchars($blend['description'])) ?></p>
+<?php endif; ?>
 
 <?php if (!empty($_GET['created'])): ?><div class="alert alert-success">Blend saved.</div><?php endif; ?>
 <?php if (!empty($_GET['updated'])): ?><div class="alert alert-success">Changes saved.</div><?php endif; ?>
@@ -130,6 +141,9 @@ require __DIR__ . '/includes/views/header.php';
       <strong><?= htmlspecialchars($authorName) ?><?= $isAuthor ? ' <span class="badge bg-light text-dark border">You</span>' : '' ?></strong>
       <span class="text-muted small"><?= htmlspecialchars(format_date_for_display(substr((string) $note['created_at'], 0, 10))) ?></span>
     </div>
+    <?php if ($note['score'] !== null): ?>
+      <div class="mt-1"><span class="score-star">&#9733;</span> <strong><?= (int) $note['score'] ?></strong><span class="text-muted">/<?= MAX_SCORE ?></span></div>
+    <?php endif; ?>
     <div class="row mt-2">
       <?php if ($note['espresso_notes'] !== null): ?>
         <div class="col-md-6"><div class="small text-muted">Espresso</div><?= nl2br(htmlspecialchars($note['espresso_notes'])) ?></div>
@@ -147,6 +161,10 @@ require __DIR__ . '/includes/views/header.php';
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="update">
               <input type="hidden" name="note_id" value="<?= (int) $note['id'] ?>">
+              <div class="mb-2">
+                <label class="form-label small">Score</label>
+                <?php $scorePrefix = 'edit' . (int) $note['id']; $scoreSelected = $note['score'] === null ? null : (int) $note['score']; require __DIR__ . '/includes/views/score_picker.php'; ?>
+              </div>
               <div class="row g-2">
                 <div class="col-md-6"><label class="form-label small">Espresso</label><textarea class="form-control" name="espresso_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"><?= htmlspecialchars((string) $note['espresso_notes']) ?></textarea></div>
                 <div class="col-md-6"><label class="form-label small">Milky drinks</label><textarea class="form-control" name="milky_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"><?= htmlspecialchars((string) $note['milky_notes']) ?></textarea></div>
@@ -168,12 +186,16 @@ require __DIR__ . '/includes/views/header.php';
 
 <div class="card mb-4">
   <div class="card-body">
-    <h3 class="h6">Add your own tasting notes</h3>
-    <p class="text-muted small">Tried this blend? Add what you thought — it shows up here with your name and doesn't change anything else.</p>
+    <h3 class="h6">Add your score and tasting notes</h3>
+    <p class="text-muted small">Tried this blend? Give it a score out of <?= MAX_SCORE ?> and/or say what you thought &mdash; both are optional, but add at least one. It shows up here with your name and doesn't change anything else.</p>
     <form method="post" action="tasting_notes.php">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="add">
       <input type="hidden" name="blend_id" value="<?= $blendId ?>">
+      <div class="mb-3">
+        <label class="form-label">Score <span class="text-muted">(0 to <?= MAX_SCORE ?>)</span></label>
+        <?php $scorePrefix = 'add'; $scoreSelected = null; require __DIR__ . '/includes/views/score_picker.php'; ?>
+      </div>
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label" for="espresso_notes">Espresso</label>
@@ -184,7 +206,7 @@ require __DIR__ . '/includes/views/header.php';
           <textarea class="form-control" id="milky_notes" name="milky_notes" rows="3" maxlength="<?= TASTING_NOTE_MAX_LENGTH ?>"></textarea>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary mt-3">Add my tasting notes</button>
+      <button type="submit" class="btn btn-primary mt-3">Add my score &amp; notes</button>
     </form>
   </div>
 </div>

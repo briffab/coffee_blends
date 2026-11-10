@@ -20,6 +20,7 @@ $errors = [];
 $blend = [
     'name' => $existing['name'],
     'roast_date' => $existing['roast_date'],
+    'description' => $existing['description'],
     'espresso_notes' => $existing['espresso_notes'],
     'milky_notes' => $existing['milky_notes'],
 ];
@@ -66,6 +67,11 @@ require __DIR__ . '/includes/views/header.php';
       <label class="form-label">Roast date</label>
       <input type="date" class="form-control" name="roast_date" value="<?= htmlspecialchars($blend['roast_date']) ?>" required>
     </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="description">Description <span class="text-muted">(optional)</span></label>
+    <textarea class="form-control" id="description" name="description" rows="3" maxlength="<?= BLEND_DESCRIPTION_MAX_LENGTH ?>" placeholder="The thinking behind this blend: why these beans, what you're aiming for&hellip;"><?= htmlspecialchars($blend['description'] ?? '') ?></textarea>
   </div>
 
   <h2 class="h5 mt-4">Beans</h2>

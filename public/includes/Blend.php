@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 const ROAST_LEVELS = ['light', 'medium', 'dark', 'very_dark', 'oily', 'burnt'];
+const BLEND_DESCRIPTION_MAX_LENGTH = 2000;
 const CLOUD_CONDITIONS = ['sunny', 'partial', 'cloudy'];
 
 /** Every blend in the family (newest first), or only one person's when $onlyUserId is given. */
@@ -53,23 +54,25 @@ function save_blend(PDO $pdo, int $userId, array $blendData, array $beans, ?int 
     try {
         if ($blendId === null) {
             $stmt = $pdo->prepare(
-                'INSERT INTO blends (user_id, name, roast_date, espresso_notes, milky_notes) VALUES (?, ?, ?, ?, ?)'
+                'INSERT INTO blends (user_id, name, roast_date, description, espresso_notes, milky_notes) VALUES (?, ?, ?, ?, ?, ?)'
             );
             $stmt->execute([
                 $userId,
                 $blendData['name'],
                 $blendData['roast_date'],
+                $blendData['description'],
                 $blendData['espresso_notes'],
                 $blendData['milky_notes'],
             ]);
             $blendId = (int) $pdo->lastInsertId();
         } else {
             $stmt = $pdo->prepare(
-                'UPDATE blends SET name = ?, roast_date = ?, espresso_notes = ?, milky_notes = ? WHERE id = ? AND user_id = ?'
+                'UPDATE blends SET name = ?, roast_date = ?, description = ?, espresso_notes = ?, milky_notes = ? WHERE id = ? AND user_id = ?'
             );
             $stmt->execute([
                 $blendData['name'],
                 $blendData['roast_date'],
+                $blendData['description'],
                 $blendData['espresso_notes'],
                 $blendData['milky_notes'],
                 $blendId,
@@ -137,11 +140,15 @@ function parse_blend_submission(array $post): array
 
     $name = trim((string) ($post['name'] ?? ''));
     $roastDate = trim((string) ($post['roast_date'] ?? ''));
+    $description = trim((string) ($post['description'] ?? ''));
     $espressoNotes = trim((string) ($post['espresso_notes'] ?? ''));
     $milkyNotes = trim((string) ($post['milky_notes'] ?? ''));
 
     if ($name === '') {
         $errors[] = 'Blend name is required.';
+    }
+    if (mb_strlen($description) > BLEND_DESCRIPTION_MAX_LENGTH) {
+        $errors[] = 'The description can be up to ' . BLEND_DESCRIPTION_MAX_LENGTH . ' characters.';
     }
 
     $dateObj = DateTime::createFromFormat('Y-m-d', $roastDate);
@@ -204,6 +211,7 @@ function parse_blend_submission(array $post): array
         'blend' => [
             'name' => $name,
             'roast_date' => $roastDate,
+            'description' => $description === '' ? null : $description,
             'espresso_notes' => $espressoNotes === '' ? null : $espressoNotes,
             'milky_notes' => $milkyNotes === '' ? null : $milkyNotes,
         ],

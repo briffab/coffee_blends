@@ -13,16 +13,27 @@ img {
 }
 
 .navbar .container {
-  flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
+.navbar-brand {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-user {
   min-width: 0;
+  flex: 0 1 auto;
 }
 
-.nav-name {
-  max-width: 7.5rem;
+.nav-user > * {
+  flex-shrink: 0;
+}
+
+.nav-user > .nav-name {
+  flex-shrink: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -143,6 +154,28 @@ img {
   font-size: 0.75rem;
   font-weight: 400;
   color: #6c757d;
+}
+
+/* ---------- scores and description ---------- */
+.score-star {
+  color: #e0a100;
+}
+
+.score-picker .btn {
+  padding-left: 0.65rem;
+  padding-right: 0.65rem;
+}
+
+.score-btn {
+  min-width: 2.4rem;
+}
+
+.blend-description {
+  background: #fff;
+  border: 1px solid #e2d9cd;
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- add / edit form ---------- */

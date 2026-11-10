@@ -13,13 +13,13 @@ just upload the files.
 - Login with email + password (`password_hash`/`password_verify`)
 - "Forgot password" flow: emails a time-limited reset link
 - Home page lists all your blends, with an "Add blend" button
-- A blend has a name, roast date, and espresso/milky tasting notes
+- A blend has a name, roast date, an optional short **description** (the thinking behind the blend), and espresso/milky tasting notes
 - Each blend can have any number of bean varieties, each with:
   weight, roast temperature, roast time, roaster temperature at start,
   ambient temperature, sky conditions (sunny/partial/cloudy), and roast
   level (light/medium/dark/very dark/oily/burnt)
 - Everyone signed in can see every family member's blends (with who added each one); only the person who added a blend, or an admin, can edit it, delete it or change its image
-- Anyone signed in can add their own **tasting notes** (espresso and/or milky) to any blend; they show under the blend with the person's name. You can edit or delete your own notes; admins can delete anyone's
+- Anyone signed in can add their own **score (0 to 5)** and/or **tasting notes** (espresso and/or milky) to any blend; they show under the blend with the person's name, and the blend shows its average score. You can edit or delete your own; admins can delete anyone's
 - Family accounts: an admin adds, edits, resets passwords for and deletes
   users from the **Users** page; everyone can change their own name and
   password from the link with their name at the top right
@@ -184,20 +184,29 @@ image** on its page. Unchosen candidates are deleted.
   database; locally via `mysql`). Fresh installs from `sql/schema.sql` already
   include the column.
 
-## Tasting notes
+## Scores, tasting notes and descriptions
 
-A blend's own espresso/milky notes belong to the person who added it (and are
-edited with the rest of the blend). Everyone else — and the owner too — adds
-their own notes in the **Add your own tasting notes** box at the bottom of the
-blend page. Each note is saved separately with the author's name and date, so
-people never overwrite one another, and adding notes changes nothing else
-about the blend. Authors can edit or delete their own notes; admins can delete
+A blend's own description and espresso/milky notes belong to the person who
+added it (and are edited with the rest of the blend). Everyone else — and the
+owner too — adds their own **score from 0 to 5** and/or tasting notes in the
+**Add your score and tasting notes** box at the bottom of the blend page. A
+score on its own is fine, and so are notes without a score; there just has to
+be at least one. Each entry is saved separately with the author's name and
+date, so people never overwrite one another, and adding one changes nothing
+else about the blend.
+
+The blend's average score (also shown in the list) counts each person once: if
+someone scores the same blend on several days, their scores are averaged first
+and that single figure goes into the overall average, so no one person can
+outweigh the rest. A score of 0 is a real score; "None" means no score. Authors can edit or delete their own notes; admins can delete
 any (but not rewrite someone else's words). Deleting a blend or a user deletes
 their notes with it.
 
-- **Existing databases need a one-off migration** — run
+- **Existing databases need one-off migrations** — run
   `sql/migrations/003_add_tasting_notes.sql` (creates the `tasting_notes`
-  table). **Run it before deploying this version**: the blend page reads it.
+  table) and then `sql/migrations/004_add_scores_and_description.sql` (adds
+  `tasting_notes.score` and `blends.description`). **Run them before deploying
+  this version**: the code reads those columns.
 
 ## Users and admins
 

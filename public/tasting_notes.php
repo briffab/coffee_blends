@@ -12,6 +12,7 @@ csrf_verify();
 
 $currentUser = current_user($pdo);
 $action = (string) ($_POST['action'] ?? '');
+$scoreRaw = (string) ($_POST['score'] ?? '');
 $espresso = (string) ($_POST['espresso_notes'] ?? '');
 $milky = (string) ($_POST['milky_notes'] ?? '');
 
@@ -36,24 +37,24 @@ $back = 'blend_view.php?id=' . $blendId . '#notes';
 $isAuthor = $note !== null && (int) $note['user_id'] === (int) $currentUser['id'];
 
 if ($action === 'add') {
-    [$espressoClean, $milkyClean, $error] = clean_tasting_note_input($espresso, $milky);
+    [$scoreClean, $espressoClean, $milkyClean, $error] = clean_tasting_note_input($scoreRaw, $espresso, $milky);
     if ($error !== null) {
         flash('danger', $error);
     } else {
-        add_tasting_note($pdo, $blendId, (int) $currentUser['id'], $espressoClean, $milkyClean);
-        flash('success', 'Your tasting notes were added.');
+        add_tasting_note($pdo, $blendId, (int) $currentUser['id'], $scoreClean, $espressoClean, $milkyClean);
+        flash('success', 'Thanks — your score and tasting notes were added.');
     }
 } elseif ($action === 'update') {
     if (!$isAuthor) {
         http_response_code(403);
         exit('You can only edit your own tasting notes.');
     }
-    [$espressoClean, $milkyClean, $error] = clean_tasting_note_input($espresso, $milky);
+    [$scoreClean, $espressoClean, $milkyClean, $error] = clean_tasting_note_input($scoreRaw, $espresso, $milky);
     if ($error !== null) {
         flash('danger', $error);
     } else {
-        update_tasting_note($pdo, (int) $note['id'], $espressoClean, $milkyClean);
-        flash('success', 'Your tasting notes were updated.');
+        update_tasting_note($pdo, (int) $note['id'], $scoreClean, $espressoClean, $milkyClean);
+        flash('success', 'Your score and tasting notes were updated.');
     }
 } elseif ($action === 'delete') {
     if (!$isAuthor && (int) $currentUser['is_admin'] !== 1) {

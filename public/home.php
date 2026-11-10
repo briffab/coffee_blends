@@ -7,6 +7,7 @@ require_login();
 $currentUser = current_user($pdo);
 $onlyMine = !empty($_GET['mine']);
 $blends = get_blends($pdo, $onlyMine ? (int) $currentUser['id'] : null);
+$ratings = get_blend_ratings($pdo);
 
 $pageTitle = $onlyMine ? 'My blends' : 'Family blends';
 require __DIR__ . '/includes/views/header.php';
@@ -43,6 +44,9 @@ require __DIR__ . '/includes/views/header.php';
               <?= htmlspecialchars(format_date_for_display($blend['roast_date'])) ?>
               &middot; <?= htmlspecialchars(display_name(['name' => $blend['owner_name'], 'email' => $blend['owner_email']])) ?>
               &middot; <?= (int) $blend['bean_count'] ?> <?= (int) $blend['bean_count'] === 1 ? 'bean' : 'beans' ?>
+              <?php if (isset($ratings[(int) $blend['id']])): ?>
+                &middot; <span class="score-star">&#9733;</span> <?= format_score($ratings[(int) $blend['id']]['average']) ?>
+              <?php endif; ?>
             </span>
           </span>
         </a>

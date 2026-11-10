@@ -6,7 +6,7 @@ require_login();
 
 $currentUser = current_user($pdo);
 $errors = [];
-$blend = ['name' => '', 'roast_date' => date('Y-m-d'), 'espresso_notes' => '', 'milky_notes' => ''];
+$blend = ['name' => '', 'roast_date' => date('Y-m-d'), 'description' => '', 'espresso_notes' => '', 'milky_notes' => ''];
 $beans = [[]];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -49,6 +49,11 @@ require __DIR__ . '/includes/views/header.php';
       <label class="form-label">Roast date</label>
       <input type="date" class="form-control" name="roast_date" value="<?= htmlspecialchars($blend['roast_date']) ?>" required>
     </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="description">Description <span class="text-muted">(optional)</span></label>
+    <textarea class="form-control" id="description" name="description" rows="3" maxlength="<?= BLEND_DESCRIPTION_MAX_LENGTH ?>" placeholder="The thinking behind this blend: why these beans, what you're aiming for&hellip;"><?= htmlspecialchars($blend['description'] ?? '') ?></textarea>
   </div>
 
   <h2 class="h5 mt-4">Beans</h2>
